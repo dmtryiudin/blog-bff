@@ -15,6 +15,7 @@ import {
 import upload from 'express-fileupload'
 import {addComment, deleteComment, updateComment, setCommentLike} from "./comments.js";
 import {getLocation} from "./location.js";
+import { cacheAllPosts, cacheAllUsers, cacheLocation, cachePost, cacheUser, clearAllCache } from './cacheing.js';
 
 const PORT = process.env.PORT ?? 3001
 
@@ -23,6 +24,7 @@ app.use(express.json());
 app.use(cors())
 app.use(upload())
 
+//==============================================================================
 app.get('/', (req, res)=>{
     res.send('bff')
 })
@@ -72,7 +74,7 @@ app.post('/users', (req, res)=>{
 })
 
 app.get('/users', (req, res)=>{
-    getAllUsers(req.query?.substr)
+    cacheAllUsers.cache(getAllUsers, req.query?.substr)
         .then(result=>{
             if(result.error){
                 res.status(result.data.status);
@@ -86,7 +88,7 @@ app.get('/users', (req, res)=>{
 })
 
 app.get('/users/:id', (req, res)=>{
-    getUserWithPosts(req.params.id)
+    cacheUser.cache(getUserWithPosts, req.params.id)
         .then(result=>{
             if(result.error){
                 res.status(result.data.status);
@@ -178,7 +180,7 @@ app.patch('/posts/image/:id', (req, res)=>{
 })
 
 app.get('/posts', (req, res)=>{
-    getAllPosts(req.query)
+    cacheAllPosts.cache(getAllPosts, req.query)
         .then(result=>{
             if(result.error){
                 res.status(result.data.status);
@@ -192,7 +194,7 @@ app.get('/posts', (req, res)=>{
 })
 
 app.get('/posts/:id', (req, res)=>{
-    getPostWithComments(req.params.id)
+    cachePost.cache(getPostWithComments, req.params.id)
         .then(result=>{
             if(result.error){
                 res.status(result.data.status);
@@ -308,7 +310,7 @@ app.put('/comments/like/:id', (req, res)=>{
 //=====================================LOCATION========================================
 
 app.get('/location', (req, res)=>{
-    getLocation(req.query?.ip)
+    cacheLocation.cache(getLocation, req.query?.ip)
         .then(result=>{
             if(result.error){
                 res.status(result.data.status);
@@ -332,4 +334,5 @@ app.all('*', (req, res) => {
 
 app.listen(PORT, ()=>{
     console.log(`Server is running on port ${PORT}...`)
+    setInterval(clearAllCache, 8640000)
 })

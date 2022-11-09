@@ -1,0 +1,1 @@
+export const URL = 'http://test-blog-api.ficuslife.com/api/v1'
